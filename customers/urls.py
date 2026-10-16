@@ -7,4 +7,6 @@ app_name = "customers"
 urlpatterns = [
     path("", views.CustomerListView.as_view(), name="customer_list"),
     path("<int:pk>/", views.CustomerDetailView.as_view(), name="customer_detail"),
+    path("nuevo/", views.CustomerCreateView.as_view(), name="customer_create"),
+    path("<int:pk>/editar/", views.CustomerUpdateView.as_view(), name="customer_update"),
 ]

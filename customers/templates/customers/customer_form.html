@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar cliente{% else %}Nuevo cliente{% endif %}{% endblock %}
+
+{% block content %}
+<a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'customers:customer_list' %}{% endif %}"
+   class="text-decoration-none small">
+  <i class="bi bi-arrow-left"></i> {% if object %}{{ object.display_name }}{% else %}Clientes{% endif %}
+</a>
+<h1 class="h3 fw-bold mt-2 mb-4">{% if object %}Editar cliente{% else %}Nuevo cliente{% endif %}</h1>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card p-4 h-100">
+        <h2 class="h6 fw-bold text-uppercase text-secondary mb-3"><i class="bi bi-person-vcard me-1"></i> Identificación</h2>
+        {% include "includes/form_field.html" with field=form.customer_type %}
+        <div class="row" data-customer-type="individual">
+          <div class="col-md-5">{% include "includes/form_field.html" with field=form.first_name %}</div>
+          <div class="col-md-7">{% include "includes/form_field.html" with field=form.last_name %}</div>
+        </div>
+        <div data-customer-type="company">
+          {% include "includes/form_field.html" with field=form.company_name %}
+        </div>
+        {% include "includes/form_field.html" with field=form.tax_id %}
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card p-4 h-100">
+        <h2 class="h6 fw-bold text-uppercase text-secondary mb-3"><i class="bi bi-telephone me-1"></i> Contacto</h2>
+        <div class="row">
+          <div class="col-md-5">{% include "includes/form_field.html" with field=form.phone %}</div>
+          <div class="col-md-7">{% include "includes/form_field.html" with field=form.email %}</div>
+        </div>
+        {% include "includes/form_field.html" with field=form.address %}
+        <div class="row">
+          <div class="col-md-4">{% include "includes/form_field.html" with field=form.postal_code %}</div>
+          <div class="col-md-8">{% include "includes/form_field.html" with field=form.city %}</div>
+        </div>
+        {% include "includes/form_field.html" with field=form.insurer %}
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mt-4">
+    <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'customers:customer_list' %}{% endif %}"
+       class="btn btn-outline-primary">Cancelar</a>
+    <button type="submit" class="btn btn-accent">
+      <i class="bi bi-check-lg me-1"></i> {% if object %}Guardar cambios{% else %}Crear cliente{% endif %}
+    </button>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Show only the name fields that match the selected customer type
+  document.addEventListener("DOMContentLoaded", () => {
+    const typeSelect = document.getElementById("id_customer_type");
+    const toggleNameFields = () => {
+      document.querySelectorAll("[data-customer-type]").forEach((section) => {
+        section.hidden = section.dataset.customerType !== typeSelect.value;
+      });
+    };
+    typeSelect.addEventListener("change", toggleNameFields);
+    toggleNameFields();
+  });
+</script>
+{% endblock %}

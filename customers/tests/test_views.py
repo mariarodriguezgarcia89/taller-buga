@@ -50,3 +50,44 @@ def test_customer_detail_shows_vehicles(logged_client, vehicle):
 def test_customer_detail_returns_404_for_unknown_customer(logged_client):
     response = logged_client.get(reverse("customers:customer_detail", args=[999999]))
     assert response.status_code == 404
+
+def customer_form_data(**overrides):
+    data = {
+        "customer_type": "individual",
+        "first_name": "Xoán",
+        "last_name": "Pereira Lago",
+        "company_name": "",
+        "tax_id": "12345678-z",
+        "phone": "600987654",
+        "email": "",
+        "address": "",
+        "postal_code": "",
+        "city": "Vigo",
+        "insurer": "",
+    }
+    data.update(overrides)
+    return data
+
+
+def test_create_customer_redirects_to_detail(logged_client, db):
+    response = logged_client.post(reverse("customers:customer_create"), customer_form_data())
+    customer = Customer.objects.get(last_name="Pereira Lago")
+    assert response.status_code == 302
+    assert response.url == customer.get_absolute_url()
+    assert customer.tax_id == "12345678Z"
+
+
+def test_company_without_name_is_not_created(logged_client, db):
+    data = customer_form_data(customer_type="company", first_name="", last_name="")
+    response = logged_client.post(reverse("customers:customer_create"), data)
+    assert response.status_code == 200
+    assert "company_name" in response.context["form"].errors
+    assert not Customer.objects.exists()
+
+
+def test_update_customer(logged_client, customer):
+    url = reverse("customers:customer_update", args=[customer.pk])
+    data = customer_form_data(first_name="Lucía", last_name="Otero Fernández", phone="611222333")
+    logged_client.post(url, data)
+    customer.refresh_from_db()
+    assert customer.phone == "611222333"

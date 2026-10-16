@@ -18,7 +18,7 @@
       <span class="text-secondary">{{ customer.get_customer_type_display }}</span>
     </div>
   </div>
-  <a href="#" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i> Editar</a>
+  <a href="{% url 'customers:customer_update' customer.pk %}" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i> Editar</a>
 </div>
 
 <div class="row g-4">

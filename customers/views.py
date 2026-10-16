@@ -1,9 +1,10 @@
-from .models import Customer, normalize_plate
-
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Q, Value
 from django.db.models.functions import Coalesce, Lower, NullIf
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from django.views.generic import DetailView, ListView
+from .forms import CustomerForm
+from .models import Customer, normalize_plate
 
 
 def customer_search_filter(term):
@@ -29,9 +30,14 @@ class CustomerListView(ListView):
         )
         for term in self.search_query.split():
             queryset = queryset.filter(customer_search_filter(term))
-        return queryset.annotate(
-            sort_name=Lower(Coalesce(NullIf("company_name", Value("")), "last_name"))
-        ).order_by("sort_name", "first_name").distinct()
+        return (
+            queryset.annotate(
+                sort_name=Lower(Coalesce(NullIf("company_name", Value("")), "last_name"))
+            )
+            .order_by("sort_name", "first_name")
+            .distinct()
+        )
+
     @property
     def search_query(self):
         return self.request.GET.get("q", "").strip()
@@ -40,6 +46,7 @@ class CustomerListView(ListView):
         context = super().get_context_data(**kwargs)
         context["query"] = self.search_query
         return context
+
 
 class CustomerDetailView(DetailView):
     model = Customer
@@ -55,12 +62,18 @@ class CustomerDetailView(DetailView):
         context["invoices"] = customer.invoices.select_related("vehicle").prefetch_related("lines")[:5]
         return context
 
-def test_customer_detail_shows_vehicles(logged_client, vehicle):
-    response = logged_client.get(vehicle.customer.get_absolute_url())
-    assert response.status_code == 200
-    assert "1234ABC" in response.content.decode()
+
+class CustomerCreateView(SuccessMessageMixin, CreateView):
+    model = Customer
+    form_class = CustomerForm
+
+    def get_success_message(self, cleaned_data):
+        return f"Cliente «{self.object.display_name}» creado."
 
 
-def test_customer_detail_returns_404_for_unknown_customer(logged_client):
-    response = logged_client.get(reverse("customers:customer_detail", args=[999999]))
-    assert response.status_code == 404
+class CustomerUpdateView(SuccessMessageMixin, UpdateView):
+    model = Customer
+    form_class = CustomerForm
+
+    def get_success_message(self, cleaned_data):
+        return f"Cambios de «{self.object.display_name}» guardados."

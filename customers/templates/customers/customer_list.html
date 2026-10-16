@@ -8,7 +8,7 @@
     <h1 class="h3 fw-bold mb-1">Clientes</h1>
     <p class="text-secondary mb-0">{{ page_obj.paginator.count }} cliente{{ page_obj.paginator.count|pluralize }}</p>
   </div>
-  <a href="#" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i> Nuevo cliente</a>
+  <a href="{% url 'customers:customer_create' %}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i> Nuevo cliente</a>
 </div>
 
 <form method="get" class="mb-3">
