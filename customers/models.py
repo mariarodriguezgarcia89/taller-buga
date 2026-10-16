@@ -134,3 +134,39 @@ class Vehicle(TimeStampedModel):
     def save(self, *args, **kwargs):
         self.plate = normalize_plate(self.plate)
         super().save(*args, **kwargs)
+
+
+
+class ServiceRecord(TimeStampedModel):
+    """Past repair imported from the workshop's old records. Read-only in the app."""
+
+    class Status(models.TextChoices):
+        PAID = "paid", "Cobrada"
+        PENDING = "pending", "Pendiente de cobro"
+
+    vehicle = models.ForeignKey(
+        Vehicle,
+        verbose_name="vehículo",
+        on_delete=models.CASCADE,
+        related_name="service_records",
+    )
+    date = models.DateField("fecha")
+    description = models.CharField("trabajo realizado", max_length=255)
+    amount = models.DecimalField(
+        "importe (sin IVA)",
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0"))],
+    )
+    status = models.CharField(
+        "estado", max_length=20, choices=Status.choices, default=Status.PAID
+    )
+    notes = models.TextField("notas", blank=True)
+
+    class Meta:
+        verbose_name = "reparación anterior"
+        verbose_name_plural = "historial de reparaciones"
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.date:%d/%m/%Y} · {self.description}"
