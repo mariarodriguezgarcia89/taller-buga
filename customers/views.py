@@ -1,9 +1,9 @@
-from django.views.generic import ListView
-
 from .models import Customer, normalize_plate
 
 from django.db.models import Count, Q, Value
 from django.db.models.functions import Coalesce, Lower, NullIf
+
+from django.views.generic import DetailView, ListView
 
 
 def customer_search_filter(term):
@@ -40,3 +40,27 @@ class CustomerListView(ListView):
         context = super().get_context_data(**kwargs)
         context["query"] = self.search_query
         return context
+
+class CustomerDetailView(DetailView):
+    model = Customer
+
+    def get_queryset(self):
+        return Customer.objects.select_related("insurer")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        customer = self.object
+        context["vehicles"] = customer.vehicles.all()
+        context["quotes"] = customer.quotes.select_related("vehicle").prefetch_related("lines")[:5]
+        context["invoices"] = customer.invoices.select_related("vehicle").prefetch_related("lines")[:5]
+        return context
+
+def test_customer_detail_shows_vehicles(logged_client, vehicle):
+    response = logged_client.get(vehicle.customer.get_absolute_url())
+    assert response.status_code == 200
+    assert "1234ABC" in response.content.decode()
+
+
+def test_customer_detail_returns_404_for_unknown_customer(logged_client):
+    response = logged_client.get(reverse("customers:customer_detail", args=[999999]))
+    assert response.status_code == 404

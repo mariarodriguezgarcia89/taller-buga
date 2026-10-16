@@ -38,7 +38,7 @@
         <tr>
           <td>
             <i class="bi {% if customer.customer_type == 'company' %}bi-building{% else %}bi-person{% endif %} text-secondary me-2"></i>
-            <a href="#" class="fw-semibold text-decoration-none">{{ customer.display_name }}</a>
+            <a href="{{ customer.get_absolute_url }}" class="fw-semibold text-decoration-none">{{ customer.display_name }}</a>
           </td>
           <td>{{ customer.tax_id|default:"—" }}</td>
           <td>

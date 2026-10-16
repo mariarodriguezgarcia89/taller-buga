@@ -7,6 +7,8 @@ from django.db import models
 
 from core.models import TimeStampedModel
 
+from django.urls import reverse
+
 
 def normalize_plate(plate):
     """Store plates as uppercase without spaces or hyphens: '1234-abc' -> '1234ABC'."""
@@ -75,6 +77,9 @@ class Customer(TimeStampedModel):
 
     def __str__(self):
         return self.display_name
+
+    def get_absolute_url(self):
+        return reverse("customers:customer_detail", args=[self.pk])
 
     @property
     def display_name(self):

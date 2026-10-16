@@ -120,3 +120,14 @@
   background-color: var(--tb-orange);
   border-color: var(--tb-orange);
 }
+
+.btn-outline-primary {
+  --bs-btn-color: var(--tb-navy);
+  --bs-btn-border-color: var(--tb-navy);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--tb-navy);
+  --bs-btn-hover-border-color: var(--tb-navy);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--tb-navy-dark);
+  --bs-btn-active-border-color: var(--tb-navy-dark);
+}

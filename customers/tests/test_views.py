@@ -40,3 +40,13 @@ def test_search_by_plate_in_any_format(logged_client, vehicle):
 def test_customer_with_two_matching_vehicles_appears_once(logged_client, vehicle):
     vehicle.customer.vehicles.create(plate="1234ABD", make="Renault")
     assert search(logged_client, "1234AB") == [vehicle.customer]
+
+def test_customer_detail_shows_vehicles(logged_client, vehicle):
+    response = logged_client.get(vehicle.customer.get_absolute_url())
+    assert response.status_code == 200
+    assert "1234ABC" in response.content.decode()
+
+
+def test_customer_detail_returns_404_for_unknown_customer(logged_client):
+    response = logged_client.get(reverse("customers:customer_detail", args=[999999]))
+    assert response.status_code == 404

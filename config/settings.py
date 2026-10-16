@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "customers",
     "billing",
     "core",
+    "django.contrib.humanize"
 ]
 
 MIDDLEWARE = [
@@ -128,3 +129,5 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "core:dashboard"
 LOGOUT_REDIRECT_URL = "login"
+
+FORMAT_MODULE_PATH = ["config.formats"]
