@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from core.models import TimeStampedModel
 from customers.models import Customer, Insurer, Vehicle
+from django.urls import reverse
 
 CENT = Decimal("0.01")
 PERCENT_VALIDATORS = [MinValueValidator(Decimal("0")), MaxValueValidator(Decimal("100"))]
@@ -173,9 +174,25 @@ class Quote(BillingDocument):
     )
     valid_until = models.DateField("válido hasta", null=True, blank=True)
 
+    ALLOWED_TRANSITIONS = {
+        Status.DRAFT: [Status.SENT, Status.ACCEPTED, Status.REJECTED],
+        Status.SENT: [Status.ACCEPTED, Status.REJECTED],
+        Status.ACCEPTED: [],
+        Status.REJECTED: [],
+    }
+
     class Meta(BillingDocument.Meta):
         verbose_name = "presupuesto"
         verbose_name_plural = "presupuestos"
+
+    def get_absolute_url(self):
+        return reverse("billing:quote_detail", args=[self.pk])
+
+    def change_status(self, new_status):
+        if new_status not in self.ALLOWED_TRANSITIONS[self.status]:
+            raise ValidationError("Ese cambio de estado no está permitido.")
+        self.status = new_status
+        self.save(update_fields=["status", "updated_at"])
 
     @transaction.atomic
     def create_invoice(self):
@@ -203,7 +220,7 @@ class Quote(BillingDocument):
             for line in self.lines.all()
         )
         return invoice
-        
+
 class QuoteLine(DocumentLine):
     quote = models.ForeignKey(
         Quote, verbose_name="presupuesto", on_delete=models.CASCADE, related_name="lines"

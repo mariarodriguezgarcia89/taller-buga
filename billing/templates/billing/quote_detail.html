@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}{{ quote.number }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'billing:quote_list' %}" class="text-decoration-none small">
+  <i class="bi bi-arrow-left"></i> Presupuestos
+</a>
+
+<div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mt-2 mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <h1 class="h3 fw-bold mb-0">Presupuesto {{ quote.number }}</h1>
+      {% include "billing/includes/status_badge.html" with status=quote.status label=quote.get_status_display %}
+    </div>
+    <p class="text-secondary mb-0 mt-1">
+      {{ quote.issue_date|date:"d/m/Y" }}
+      {% if quote.valid_until %} · válido hasta {{ quote.valid_until|date:"d/m/Y" }}{% endif %}
+    </p>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2">
+    {% for status, label, css_class, icon in actions %}
+    <form method="post" action="{% url 'billing:quote_status' quote.pk %}"
+          {% if status == "rejected" %}onsubmit="return confirm('¿Rechazar este presupuesto? No se podrá deshacer.');"{% endif %}>
+      {% csrf_token %}
+      <input type="hidden" name="status" value="{{ status }}">
+      <button type="submit" class="btn {{ css_class }}"><i class="bi {{ icon }} me-1"></i> {{ label }}</button>
+    </form>
+    {% endfor %}
+
+    {% if quote.status == "accepted" %}
+      {% if invoice %}
+        <span class="btn btn-light disabled"><i class="bi bi-receipt me-1"></i> Facturado: {{ invoice.number }}</span>
+      {% else %}
+        <form method="post" action="{% url 'billing:quote_invoice' quote.pk %}"
+              onsubmit="return confirm('¿Crear la factura de este presupuesto?');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-accent"><i class="bi bi-receipt me-1"></i> Convertir en factura</button>
+        </form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card p-4">
+      <h2 class="h6 fw-bold text-uppercase text-secondary mb-3">Trabajos y recambios</h2>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th class="text-end">Cantidad</th>
+              <th class="text-end">Precio</th>
+              <th class="text-end">Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for line in quote.lines.all %}
+            <tr>
+              <td>{{ line.description }}</td>
+              <td class="text-end">{{ line.quantity|floatformat:"-2" }}</td>
+              <td class="text-end text-nowrap">{{ line.unit_price|floatformat:"2g" }} €</td>
+              <td class="text-end text-nowrap fw-semibold">{{ line.amount|floatformat:"2g" }} €</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-secondary">Este presupuesto no tiene líneas.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4 d-flex flex-column gap-4">
+    <div class="card p-4">
+      <h2 class="h6 fw-bold text-uppercase text-secondary mb-3">Cliente y vehículo</h2>
+      <a href="{{ quote.customer.get_absolute_url }}" class="d-block fw-semibold text-decoration-none mb-1">
+        <i class="bi bi-person me-1"></i>{{ quote.customer.display_name }}
+      </a>
+      <a href="{{ quote.vehicle.get_absolute_url }}" class="text-decoration-none">
+        <span class="badge text-bg-dark font-monospace">{{ quote.vehicle.plate }}</span>
+        {{ quote.vehicle.make }} {{ quote.vehicle.model }}
+      </a>
+      {% if quote.insurer %}
+      <p class="small text-secondary mt-2 mb-0"><i class="bi bi-shield-check me-1"></i>{{ quote.insurer }}</p>
+      {% endif %}
+    </div>
+
+    <div class="card p-4">
+      <h2 class="h6 fw-bold text-uppercase text-secondary mb-3">Totales</h2>
+      <dl class="row mb-0">
+        <dt class="col-7 fw-normal text-secondary">Subtotal</dt>
+        <dd class="col-5 text-end">{{ quote.subtotal|floatformat:"2g" }} €</dd>
+        {% if quote.discount_percent %}
+        <dt class="col-7 fw-normal text-secondary">Descuento ({{ quote.discount_percent|floatformat:"-2" }} %)</dt>
+        <dd class="col-5 text-end">−{{ quote.discount_amount|floatformat:"2g" }} €</dd>
+        {% endif %}
+        <dt class="col-7 fw-normal text-secondary">Base imponible</dt>
+        <dd class="col-5 text-end">{{ quote.taxable_base|floatformat:"2g" }} €</dd>
+        <dt class="col-7 fw-normal text-secondary">IVA ({{ quote.vat_rate|floatformat:"-2" }} %)</dt>
+        <dd class="col-5 text-end">{{ quote.vat_amount|floatformat:"2g" }} €</dd>
+        <dt class="col-7 fw-bold fs-5 border-top pt-2">Total</dt>
+        <dd class="col-5 text-end fw-bold fs-5 border-top pt-2 mb-0">{{ quote.total|floatformat:"2g" }} €</dd>
+      </dl>
+    </div>
+
+    {% if quote.notes %}
+    <div class="card p-4">
+      <h2 class="h6 fw-bold text-uppercase text-secondary mb-2">Observaciones</h2>
+      <p class="mb-0">{{ quote.notes|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

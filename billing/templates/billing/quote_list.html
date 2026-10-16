@@ -8,7 +8,7 @@
     <h1 class="h3 fw-bold mb-1">Presupuestos</h1>
     <p class="text-secondary mb-0">{{ page_obj.paginator.count }} presupuesto{{ page_obj.paginator.count|pluralize }}</p>
   </div>
-  <a href="#" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i> Nuevo presupuesto</a>
+  <a href="{{ quote.get_absolute_url }}" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i> Nuevo presupuesto</a>
 </div>
 
 <ul class="nav nav-pills gap-2 mb-3">
@@ -48,7 +48,7 @@
       <tbody>
         {% for quote in quote_list %}
         <tr>
-          <td><a href="#" class="fw-semibold text-decoration-none">{{ quote.number }}</a></td>
+        <td><a href="{{ quote.get_absolute_url }}" class="fw-semibold text-decoration-none">{{ quote.number }}</a></td>
           <td class="text-nowrap">{{ quote.issue_date|date:"d/m/Y" }}</td>
           <td>{{ quote.customer.display_name }}</td>
           <td><span class="badge text-bg-dark font-monospace">{{ quote.vehicle.plate }}</span></td>

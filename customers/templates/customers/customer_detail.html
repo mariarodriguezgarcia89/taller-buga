@@ -90,7 +90,7 @@
           <tbody>
             {% for quote in quotes %}
             <tr>
-              <td class="fw-semibold">{{ quote.number }}</td>
+              <td><a href="{{ quote.get_absolute_url }}" class="fw-semibold text-decoration-none">{{ quote.number }}</a></td>
               <td>{{ quote.issue_date|date:"d/m/Y" }}</td>
               <td><span class="font-monospace">{{ quote.vehicle.plate }}</span></td>
               <td>{% include "billing/includes/status_badge.html" with status=quote.status label=quote.get_status_display %}</td>
