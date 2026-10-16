@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.urls import reverse
 
 from billing.models import Quote
-from customers.models import ServiceRecord
+from customers.models import ServiceRecord, Vehicle
 
 LIST_URL = reverse("customers:vehicle_list")
 
@@ -46,3 +46,30 @@ def test_vehicle_without_history_shows_empty_state(logged_client, vehicle):
     response = logged_client.get(vehicle.get_absolute_url())
     assert response.context["history"] == []
     assert "aún no tiene reparaciones" in response.content.decode()
+
+def vehicle_form_data(**overrides):
+    data = {"plate": "5678 xyz", "make": "Renault", "model": "Clio", "year": "2020", "mileage": "42000", "vin": ""}
+    data.update(overrides)
+    return data
+
+
+def test_create_vehicle_for_customer(logged_client, customer):
+    url = reverse("customers:vehicle_create", args=[customer.pk])
+    response = logged_client.post(url, vehicle_form_data())
+    vehicle = Vehicle.objects.get(plate="5678XYZ")
+    assert vehicle.customer == customer
+    assert response.url == customer.get_absolute_url()
+
+
+def test_duplicate_plate_in_another_format_is_rejected(logged_client, vehicle):
+    url = reverse("customers:vehicle_create", args=[vehicle.customer.pk])
+    response = logged_client.post(url, vehicle_form_data(plate="1234 abc"))
+    assert response.status_code == 200
+    assert "plate" in response.context["form"].errors
+
+
+def test_update_vehicle_mileage(logged_client, vehicle):
+    url = reverse("customers:vehicle_update", args=[vehicle.pk])
+    logged_client.post(url, vehicle_form_data(plate=vehicle.plate, make="Seat", mileage="91000"))
+    vehicle.refresh_from_db()
+    assert vehicle.mileage == 91000

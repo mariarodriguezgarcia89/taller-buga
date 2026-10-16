@@ -3,12 +3,13 @@ from django.db.models import Count, Q, Value
 from django.db.models.functions import Coalesce, Lower, NullIf
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
-from .forms import CustomerForm
+from .forms import CustomerForm, VehicleForm
 from .models import Customer, Vehicle, normalize_plate
 
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+from django.shortcuts import get_object_or_404
 
 def customer_search_filter(term):
     """Match a single search term against the customer's main fields and plates."""
@@ -150,3 +151,44 @@ class VehicleDetailView(DetailView):
         ]
         context["history"] = sorted(history, key=lambda entry: entry.date, reverse=True)
         return context
+
+class VehicleCreateView(SuccessMessageMixin, CreateView):
+    """Add a vehicle to the customer given in the URL."""
+
+    model = Vehicle
+    form_class = VehicleForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.customer = get_object_or_404(Customer, pk=kwargs["customer_pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.customer = self.customer
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["customer"] = self.customer
+        return context
+
+    def get_success_url(self):
+        return self.customer.get_absolute_url()
+
+    def get_success_message(self, cleaned_data):
+        return f"Vehículo {self.object.plate} añadido a {self.customer.display_name}."
+
+
+class VehicleUpdateView(SuccessMessageMixin, UpdateView):
+    model = Vehicle
+    form_class = VehicleForm
+
+    def get_queryset(self):
+        return Vehicle.objects.select_related("customer")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["customer"] = self.object.customer
+        return context
+
+    def get_success_message(self, cleaned_data):
+        return f"Cambios de {self.object.plate} guardados."

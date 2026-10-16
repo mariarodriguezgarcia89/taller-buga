@@ -11,4 +11,10 @@ urlpatterns = [
     path("clientes/<int:pk>/editar/", views.CustomerUpdateView.as_view(), name="customer_update"),
     path("vehiculos/", views.VehicleListView.as_view(), name="vehicle_list"),
     path("vehiculos/<int:pk>/", views.VehicleDetailView.as_view(), name="vehicle_detail"),
+    path(
+        "clientes/<int:customer_pk>/vehiculos/nuevo/",
+        views.VehicleCreateView.as_view(),
+        name="vehicle_create",
+    ),
+    path("vehiculos/<int:pk>/editar/", views.VehicleUpdateView.as_view(), name="vehicle_update"),
 ]
