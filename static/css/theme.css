@@ -1,0 +1,122 @@
+/* Taller Buga theme: navy (the ría) + workshop orange */
+:root {
+  --tb-navy: #12324f;
+  --tb-navy-dark: #0b2238;
+  --tb-orange: #f08a24;
+  --tb-orange-dark: #d97614;
+  --tb-bg: #f4f6f9;
+
+  --bs-body-font-family: "Manrope", system-ui, sans-serif;
+  --bs-body-bg: var(--tb-bg);
+  --bs-primary: var(--tb-navy);
+  --bs-primary-rgb: 18, 50, 79;
+  --bs-link-color: var(--tb-navy);
+  --bs-link-color-rgb: 18, 50, 79;
+  --bs-border-radius: 0.6rem;
+}
+
+/* Buttons keep their own variables, so they need to be themed explicitly */
+.btn-primary {
+  --bs-btn-bg: var(--tb-navy);
+  --bs-btn-border-color: var(--tb-navy);
+  --bs-btn-hover-bg: var(--tb-navy-dark);
+  --bs-btn-hover-border-color: var(--tb-navy-dark);
+  --bs-btn-active-bg: var(--tb-navy-dark);
+  --bs-btn-active-border-color: var(--tb-navy-dark);
+}
+
+.btn-accent {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--tb-orange);
+  --bs-btn-border-color: var(--tb-orange);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--tb-orange-dark);
+  --bs-btn-hover-border-color: var(--tb-orange-dark);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--tb-orange-dark);
+  --bs-btn-active-border-color: var(--tb-orange-dark);
+}
+
+/* Sidebar */
+.sidebar {
+  --bs-offcanvas-width: 260px;
+}
+
+.sidebar-inner {
+  background: var(--tb-navy);
+  min-height: 100%;
+  width: 100%;
+  padding: 1.25rem;
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-inner {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+}
+
+.brand {
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.15rem;
+  text-decoration: none;
+}
+
+.brand i {
+  color: var(--tb-orange);
+}
+
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: var(--bs-border-radius);
+  padding: 0.6rem 0.9rem;
+}
+
+.sidebar .nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar .nav-link.active {
+  color: #fff;
+  background: var(--tb-orange);
+}
+
+/* Cards */
+.card {
+  border: 0;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+}
+
+.stat-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  color: var(--tb-orange);
+  background: rgba(240, 138, 36, 0.15);
+}
+
+/* Forms: focus ring in the theme colour instead of Bootstrap blue */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--tb-orange);
+  box-shadow: 0 0 0 0.25rem rgba(240, 138, 36, 0.2);
+}
+
+.form-check-input:checked {
+  background-color: var(--tb-orange);
+  border-color: var(--tb-orange);
+}

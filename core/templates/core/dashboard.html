@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Panel{% endblock %}
+
+{% block content %}
+<h1 class="h3 fw-bold mb-1">Hola, {{ user.first_name|default:user.username }} 👋</h1>
+<p class="text-secondary mb-4">Así está hoy el taller.</p>
+
+<div class="row g-3">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="stat-icon"><i class="bi bi-people"></i></div>
+      <div><div class="text-secondary small">Clientes</div><div class="h4 fw-bold mb-0">{{ customer_count }}</div></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="stat-icon"><i class="bi bi-car-front"></i></div>
+      <div><div class="text-secondary small">Vehículos</div><div class="h4 fw-bold mb-0">{{ vehicle_count }}</div></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="stat-icon"><i class="bi bi-file-earmark-text"></i></div>
+      <div><div class="text-secondary small">Presupuestos abiertos</div><div class="h4 fw-bold mb-0">{{ open_quote_count }}</div></div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 d-flex flex-row align-items-center gap-3">
+      <div class="stat-icon"><i class="bi bi-receipt"></i></div>
+      <div><div class="text-secondary small">Facturas por cobrar</div><div class="h4 fw-bold mb-0">{{ unpaid_invoice_count }}</div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
