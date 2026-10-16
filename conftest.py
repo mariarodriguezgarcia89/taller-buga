@@ -29,3 +29,9 @@ def quote(customer, vehicle):
         description="Pastillas de freno delanteras", quantity=Decimal("1"), unit_price=Decimal("64.90")
     )
     return quote
+
+@pytest.fixture
+def logged_client(client, django_user_model, db):
+    user = django_user_model.objects.create_user(username="staff", password="test-pass-123")
+    client.force_login(user)
+    return client

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h1 class="h3 fw-bold mb-1">Clientes</h1>
+    <p class="text-secondary mb-0">{{ page_obj.paginator.count }} cliente{{ page_obj.paginator.count|pluralize }}</p>
+  </div>
+  <a href="#" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i> Nuevo cliente</a>
+</div>
+
+<form method="get" class="mb-3">
+  <div class="input-group">
+    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+    <input type="search" name="q" value="{{ query }}" class="form-control"
+           placeholder="Buscar por nombre, NIF, teléfono, email o matrícula">
+    <button type="submit" class="btn btn-primary">Buscar</button>
+  </div>
+</form>
+
+<div class="card">
+  {% if customer_list %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>NIF/CIF</th>
+          <th>Contacto</th>
+          <th class="text-center">Vehículos</th>
+          <th>Aseguradora</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customer_list %}
+        <tr>
+          <td>
+            <i class="bi {% if customer.customer_type == 'company' %}bi-building{% else %}bi-person{% endif %} text-secondary me-2"></i>
+            <a href="#" class="fw-semibold text-decoration-none">{{ customer.display_name }}</a>
+          </td>
+          <td>{{ customer.tax_id|default:"—" }}</td>
+          <td>
+            {% if customer.phone %}<div><i class="bi bi-telephone text-secondary me-1"></i>{{ customer.phone }}</div>{% endif %}
+            {% if customer.email %}<div class="small text-secondary">{{ customer.email }}</div>{% endif %}
+          </td>
+          <td class="text-center">
+            <span class="badge rounded-pill text-bg-light">{{ customer.vehicle_count }}</span>
+          </td>
+          <td>{{ customer.insurer|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-5 px-3">
+    <div class="stat-icon mx-auto mb-3"><i class="bi bi-people"></i></div>
+    {% if query %}
+      <p class="fw-semibold mb-1">No hay clientes que coincidan con «{{ query }}»</p>
+      <a href="{% url 'customers:customer_list' %}">Ver todos los clientes</a>
+    {% else %}
+      <p class="fw-semibold mb-1">Aún no hay clientes</p>
+      <p class="text-secondary mb-0">Crea el primero con el botón «Nuevo cliente».</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-3 d-flex justify-content-center">
+  <ul class="pagination mb-0">
+    {% if page_obj.has_previous %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query|urlencode }}">Anterior</a></li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}
+    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query|urlencode }}">Siguiente</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -30,7 +30,8 @@
           <a class="nav-link {% if app == 'core' %}active{% endif %}" href="{% url 'core:dashboard' %}">
             <i class="bi bi-speedometer2"></i> Panel
           </a>
-          <a class="nav-link" href="#"><i class="bi bi-people"></i> Clientes</a>
+            <a class="nav-link {% if 'customer_' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'customers:customer_list' %}">
+            <i class="bi bi-people"></i> Clientes </a>
           <a class="nav-link" href="#"><i class="bi bi-car-front"></i> Vehículos</a>
           <a class="nav-link" href="#"><i class="bi bi-file-earmark-text"></i> Presupuestos</a>
           <a class="nav-link" href="#"><i class="bi bi-receipt"></i> Facturas</a>
