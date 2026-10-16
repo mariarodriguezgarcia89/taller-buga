@@ -2,7 +2,7 @@ from decimal import ROUND_HALF_UP, Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from core.models import TimeStampedModel
@@ -159,7 +159,6 @@ class DocumentLine(TimeStampedModel):
     def amount(self):
         return round_money(self.quantity * self.unit_price)
 
-
 class Quote(BillingDocument):
     NUMBER_PREFIX = "P"
 
@@ -178,7 +177,33 @@ class Quote(BillingDocument):
         verbose_name = "presupuesto"
         verbose_name_plural = "presupuestos"
 
+    @transaction.atomic
+    def create_invoice(self):
+        """Create an invoice copying this quote's data and lines."""
+        if self.status != self.Status.ACCEPTED:
+            raise ValidationError("Solo se pueden facturar presupuestos aceptados.")
+        if hasattr(self, "invoice"):
+            raise ValidationError("Este presupuesto ya tiene una factura.")
 
+        invoice = Invoice.objects.create(
+            quote=self,
+            customer=self.customer,
+            vehicle=self.vehicle,
+            insurer=self.insurer,
+            discount_percent=self.discount_percent,
+            vat_rate=self.vat_rate,
+        )
+        InvoiceLine.objects.bulk_create(
+            InvoiceLine(
+                invoice=invoice,
+                description=line.description,
+                quantity=line.quantity,
+                unit_price=line.unit_price,
+            )
+            for line in self.lines.all()
+        )
+        return invoice
+        
 class QuoteLine(DocumentLine):
     quote = models.ForeignKey(
         Quote, verbose_name="presupuesto", on_delete=models.CASCADE, related_name="lines"
@@ -195,3 +220,40 @@ class QuoteLine(DocumentLine):
     class Meta(DocumentLine.Meta):
         verbose_name = "línea de presupuesto"
         verbose_name_plural = "líneas de presupuesto"
+
+
+class Invoice(BillingDocument):
+    NUMBER_PREFIX = "F"
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pendiente de cobro"
+        PAID = "paid", "Cobrada"
+        CANCELLED = "cancelled", "Anulada"
+
+    quote = models.OneToOneField(
+        Quote,
+        verbose_name="presupuesto",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="invoice",
+    )
+    status = models.CharField(
+        "estado", max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    due_date = models.DateField("vencimiento", null=True, blank=True)
+    paid_date = models.DateField("fecha de cobro", null=True, blank=True)
+
+    class Meta(BillingDocument.Meta):
+        verbose_name = "factura"
+        verbose_name_plural = "facturas"
+
+
+class InvoiceLine(DocumentLine):
+    invoice = models.ForeignKey(
+        Invoice, verbose_name="factura", on_delete=models.CASCADE, related_name="lines"
+    )
+
+    class Meta(DocumentLine.Meta):
+        verbose_name = "línea de factura"
+        verbose_name_plural = "líneas de factura"
