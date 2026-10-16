@@ -131,3 +131,9 @@
   --bs-btn-active-bg: var(--tb-navy-dark);
   --bs-btn-active-border-color: var(--tb-navy-dark);
 }
+
+.nav-pills {
+  --bs-nav-pills-link-active-bg: var(--tb-navy);
+  --bs-nav-link-color: var(--tb-navy);
+  --bs-nav-link-hover-color: var(--tb-navy-dark);
+}

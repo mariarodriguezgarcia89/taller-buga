@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Presupuestos{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h1 class="h3 fw-bold mb-1">Presupuestos</h1>
+    <p class="text-secondary mb-0">{{ page_obj.paginator.count }} presupuesto{{ page_obj.paginator.count|pluralize }}</p>
+  </div>
+  <a href="#" class="btn btn-accent"><i class="bi bi-plus-lg me-1"></i> Nuevo presupuesto</a>
+</div>
+
+<ul class="nav nav-pills gap-2 mb-3">
+  {% for value, label, count in status_tabs %}
+  <li class="nav-item">
+    <a class="nav-link {% if value == current_status %}active{% endif %}" href="{% querystring status=value page=None %}">
+      {{ label }} <span class="badge rounded-pill text-bg-light ms-1">{{ count }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+<form method="get" class="mb-3">
+  {% if current_status %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+  <div class="input-group">
+    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+    <input type="search" name="q" value="{{ query }}" class="form-control"
+           placeholder="Buscar por número, cliente o matrícula">
+    <button type="submit" class="btn btn-primary">Buscar</button>
+  </div>
+</form>
+
+<div class="card">
+  {% if quote_list %}
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Número</th>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Vehículo</th>
+          <th>Estado</th>
+          <th class="text-end">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for quote in quote_list %}
+        <tr>
+          <td><a href="#" class="fw-semibold text-decoration-none">{{ quote.number }}</a></td>
+          <td class="text-nowrap">{{ quote.issue_date|date:"d/m/Y" }}</td>
+          <td>{{ quote.customer.display_name }}</td>
+          <td><span class="badge text-bg-dark font-monospace">{{ quote.vehicle.plate }}</span></td>
+          <td>{% include "billing/includes/status_badge.html" with status=quote.status label=quote.get_status_display %}</td>
+          <td class="text-end fw-semibold text-nowrap">{{ quote.total|floatformat:"2g" }} €</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="text-center py-5 px-3">
+    <div class="stat-icon mx-auto mb-3"><i class="bi bi-file-earmark-text"></i></div>
+    {% if query or current_status %}
+      <p class="fw-semibold mb-1">No hay presupuestos con esos filtros</p>
+      <a href="{% url 'billing:quote_list' %}">Ver todos los presupuestos</a>
+    {% else %}
+      <p class="fw-semibold mb-1">Aún no hay presupuestos</p>
+      <p class="text-secondary mb-0">Crea el primero con el botón «Nuevo presupuesto».</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-3 d-flex justify-content-center">
+  <ul class="pagination mb-0">
+    {% if page_obj.has_previous %}
+    <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.previous_page_number %}">Anterior</a></li>
+    {% endif %}
+    <li class="page-item disabled"><span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span></li>
+    {% if page_obj.has_next %}
+    <li class="page-item"><a class="page-link" href="{% querystring page=page_obj.next_page_number %}">Siguiente</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}
