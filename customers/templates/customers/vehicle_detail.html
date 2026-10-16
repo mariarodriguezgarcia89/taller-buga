@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}{{ vehicle.plate }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'customers:vehicle_list' %}" class="text-decoration-none small">
+  <i class="bi bi-arrow-left"></i> Vehículos
+</a>
+
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-2 mb-4">
+  <div class="d-flex align-items-center gap-3">
+    <span class="badge text-bg-dark font-monospace fs-4">{{ vehicle.plate }}</span>
+    <div>
+      <h1 class="h3 fw-bold mb-0">{{ vehicle.make }} {{ vehicle.model }}</h1>
+      <a href="{{ vehicle.customer.get_absolute_url }}" class="text-decoration-none">
+        <i class="bi bi-person me-1"></i>{{ vehicle.customer.display_name }}
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card p-4">
+      <h2 class="h6 fw-bold text-uppercase text-secondary mb-3">Datos</h2>
+      <dl class="mb-0">
+        <dt class="small text-secondary fw-normal">Año</dt>
+        <dd>{{ vehicle.year|default:"—" }}</dd>
+        <dt class="small text-secondary fw-normal">Kilometraje</dt>
+        <dd>{% if vehicle.mileage %}{{ vehicle.mileage|intcomma }} km{% else %}—{% endif %}</dd>
+        <dt class="small text-secondary fw-normal">Número de bastidor</dt>
+        <dd class="mb-0 font-monospace">{{ vehicle.vin|default:"—" }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card p-4">
+      <h2 class="h6 fw-bold text-uppercase text-secondary mb-3">
+        <i class="bi bi-clock-history me-1"></i> Historial
+      </h2>
+      {% if history %}
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Trabajo</th>
+              <th>Origen</th>
+              <th class="text-end">Importe (sin IVA)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in history %}
+            <tr>
+              <td class="text-nowrap">{{ entry.date|date:"d/m/Y" }}</td>
+              <td>{{ entry.description|truncatechars:70 }}</td>
+              <td class="text-nowrap">
+                {% if entry.source == "invoice" %}
+                  <i class="bi bi-receipt text-secondary me-1"></i>{{ entry.reference }}
+                {% else %}
+                  <i class="bi bi-archive text-secondary me-1"></i>Histórico
+                {% endif %}
+              </td>
+              <td class="text-end fw-semibold text-nowrap">{{ entry.amount|floatformat:"2g" }} €</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-secondary mb-0">Este vehículo aún no tiene reparaciones registradas.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

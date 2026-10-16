@@ -60,7 +60,7 @@
         {% for vehicle in vehicles %}
         <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
           <div>
-            <span class="badge text-bg-dark font-monospace me-2">{{ vehicle.plate }}</span>
+            <a href="{{ vehicle.get_absolute_url }}" class="badge text-bg-dark font-monospace text-decoration-none me-2">{{ vehicle.plate }}</a>
             {{ vehicle.make }} {{ vehicle.model }}
           </div>
           <span class="small text-secondary">

@@ -132,6 +132,9 @@ class Vehicle(TimeStampedModel):
     def __str__(self):
         return f"{self.make} {self.model} ({self.plate})".replace("  ", " ")
 
+    def get_absolute_url(self):
+        return reverse("customers:vehicle_detail", args=[self.pk])
+
     def clean(self):
         super().clean()
         self.plate = normalize_plate(self.plate)
